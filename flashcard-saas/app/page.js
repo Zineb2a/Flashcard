@@ -1,95 +1,110 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import React from 'react';
+import { AppBar, Toolbar, Typography, Button, Box, Grid } from '@mui/material';
+import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
+import getStripe from './utils/get-stripe';
 
-export default function Home() {
+
+export default function HomePage() {
+  const handleSubmit = async () => {
+    const checkoutSession = await fetch('/api/checkout_sessions', {
+      method: 'POST',
+      headers: { origin: 'http://localhost:3000' },
+    });
+    const checkoutSessionJson = await checkoutSession.json();
+
+    const stripe = await getStripe();
+    const { error } = await stripe.redirectToCheckout({
+      sessionId: checkoutSessionJson.id,
+    });
+
+    if (error) {
+      console.warn(error.message);
+    }
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div>
+      {/* Header and Navigation */}
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" style={{ flexGrow: 1 }}>
+            Flashcard SaaS
+          </Typography>
+          <SignedOut>
+            <Button color="inherit" href="/sign-in">Login</Button>
+            <Button color="inherit" href="/sign-up">Sign Up</Button>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+        </Toolbar>
+      </AppBar>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      {/* Hero Section */}
+      <Box sx={{ textAlign: 'center', my: 4 }}>
+        <Typography variant="h2" component="h1" gutterBottom>
+          Welcome to Flashcard SaaS
+        </Typography>
+        <Typography variant="h5" component="h2" gutterBottom>
+          The easiest way to create flashcards from your text.
+        </Typography>
+        <Button variant="contained" color="primary" sx={{ mt: 2, mr: 2 }} href="/generate">
+          Get Started
+        </Button>
+        <Button variant="outlined" color="primary" sx={{ mt: 2 }}>
+          Learn More
+        </Button>
+      </Box>
+
+      {/* Features Section */}
+      <Box sx={{ my: 6 }}>
+        <Typography variant="h4" component="h2" gutterBottom>
+          Features
+        </Typography>
+        <Grid container spacing={4}>
+          <Grid item xs={12} sm={6} md={4}>
+            <Typography variant="h6" gutterBottom>
+              AI-Powered Flashcard Creation
+            </Typography>
+            <Typography>
+              Quickly generate flashcards from text using OpenAI technology.
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <Typography variant="h6" gutterBottom>
+              Easy Access
+            </Typography>
+            <Typography>
+              Study your flashcards from any device, anytime.
+            </Typography>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Pricing Section */}
+      <Box sx={{ my: 6, textAlign: 'center' }}>
+        <Typography variant="h4" component="h2" gutterBottom>
+          Pricing
+        </Typography>
+        <Grid container spacing={4} justifyContent="center">
+          <Grid item xs={12} sm={6} md={4}>
+            <Typography variant="h6" gutterBottom>
+              Free Plan
+            </Typography>
+            <Typography>
+              Access basic features and create flashcards for free.
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <Typography variant="h6" gutterBottom>
+              Pro Plan - $10/month
+            </Typography>
+            <Button variant="contained" color="primary" onClick={handleSubmit}>
+              Subscribe
+            </Button>
+          </Grid>
+        </Grid>
+      </Box>
     </div>
   );
 }
